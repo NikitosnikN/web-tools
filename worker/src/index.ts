@@ -22,7 +22,12 @@ export default {
 		}
 
 		// Construct the file path
-		const filePath = `./pages${path}`;
+		let filePath = `./pages${path}`;
+
+		// Append .html if not present
+		if (!filePath.endsWith('.html')) {
+			filePath += '.html';
+		}
 
 		try {
 			// Fetch the file from the worker's KV or local storage
