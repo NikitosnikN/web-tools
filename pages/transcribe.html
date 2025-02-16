@@ -6,8 +6,11 @@
     <title>HEIC Transcriber</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
-<body class="h-full" x-data="{ 
+<body class="h-full" x-data="transcriber">
+<!-- Previous x-data content moved to Alpine.data() initialization
+<body class="h-full" x-data="transcriber" x-init="{ 
     files: [],
     outputFormat: 'png',
     jpegQuality: 85,
@@ -77,7 +80,7 @@
                 <!-- Convert Button -->
                 <div class="flex justify-center mb-6">
                     <button type="button"
-                            @click="converting = true; progress = 0"
+                            @click="handleConversion()"
                             :disabled="files.length === 0 || converting"
                             class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed">
                         Convert Files
@@ -117,6 +120,50 @@
     </div>
 
     <script>
+        // Alpine.js component data
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('transcriber', () => ({
+                async handleConversion() {
+                    if (this.files.length === 0) return;
+                    
+                    this.converting = true;
+                    this.progress = 0;
+                    this.results = [];
+                    
+                    const totalFiles = this.files.length;
+                    
+                    for (let i = 0; i < this.files.length; i++) {
+                        const file = this.files[i];
+                        try {
+                            // Convert HEIC to blob
+                            const blob = await heic2any({
+                                blob: file,
+                                toType: this.outputFormat,
+                                quality: this.outputFormat === 'jpeg' ? this.jpegQuality / 100 : undefined
+                            });
+
+                            // Create URL for preview
+                            const url = URL.createObjectURL(blob);
+                            
+                            // Add to results
+                            this.results.push({
+                                filename: `${file.name.replace('.heic', '')}.${this.outputFormat}`,
+                                url: url,
+                                size: `${(blob.size / (1024 * 1024)).toFixed(2)} MB`
+                            });
+                            
+                            // Update progress
+                            this.progress = Math.round(((i + 1) / totalFiles) * 100);
+                        } catch (error) {
+                            console.error(`Error converting ${file.name}:`, error);
+                        }
+                    }
+                    
+                    this.converting = false;
+                }
+            }))
+        })
+
         // Drag and drop handling
         const dropZone = document.querySelector('label');
         
