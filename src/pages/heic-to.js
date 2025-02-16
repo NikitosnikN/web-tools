@@ -1,5 +1,3 @@
-import heic2any from "heic2any";
-
 document.getElementById('convert-button').addEventListener('click', async () => {
     const files = document.getElementById('file-input').files;
     const format = document.getElementById('format-select').value;
