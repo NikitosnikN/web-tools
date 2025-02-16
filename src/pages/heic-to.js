@@ -7,12 +7,18 @@ document.getElementById('convert-button').addEventListener('click', async () => 
     if (files.length === 0) {
         alert('Please upload at least one HEIC file.');
         return;
+        document.getElementById('image-previews').appendChild(imagePreview);
     }
 
     for (let file of files) {
         // Placeholder for conversion logic
         // Assume convertHeicToFormat is a function that converts HEIC to the desired format
         const convertedFile = await convertHeicToFormat(file, format);
+        const imagePreview = document.createElement('img');
+        imagePreview.src = URL.createObjectURL(convertedFile);
+        imagePreview.alt = `Preview of ${file.name}`;
+        imagePreview.className = 'w-full h-auto rounded-md shadow-md';
+
         const link = document.createElement('a');
         link.href = URL.createObjectURL(convertedFile);
         link.download = `${file.name.split('.')[0]}.${format}`;
