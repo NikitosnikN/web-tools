@@ -3,31 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIC to PNG/JPEG Converter</title>
+    <title>HEIC Converter Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-lg">
-        <h1 class="text-2xl font-bold mb-4">Convert HEIC to PNG/JPEG</h1>
-        <form id="upload-form" class="space-y-4 bg-gray-50 p-4 rounded-md shadow-inner">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Upload HEIC files</label>
-                <input type="file" id="file-input" accept=".heic" multiple class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-extrabold text-indigo-900 mb-2">HEIC Converter Pro</h1>
+                <p class="text-gray-600">Convert your HEIC images to PNG or JPEG format instantly</p>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Choose output format</label>
-                <select id="format-select" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="png">PNG</option>
-                    <option value="jpeg">JPEG</option>
-                </select>
+
+            <!-- Main Content -->
+            <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                <!-- Upload Section -->
+                <div class="p-6 border-b border-gray-200">
+                    <form id="upload-form" class="space-y-6">
+                        <!-- File Upload Area -->
+                        <div class="relative">
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors duration-200">
+                                <input type="file" id="file-input" accept=".heic" multiple 
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <div class="space-y-2">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-indigo-500"></i>
+                                    <p class="text-gray-700">Drag and drop your HEIC files here</p>
+                                    <p class="text-sm text-gray-500">or click to browse</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Selection -->
+                        <div class="flex items-center space-x-4">
+                            <label class="text-gray-700 font-medium">Output Format:</label>
+                            <select id="format-select" 
+                                class="flex-1 max-w-xs bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5">
+                                <option value="png">PNG - Better Quality</option>
+                                <option value="jpeg">JPEG - Smaller Size</option>
+                            </select>
+                        </div>
+
+                        <!-- Convert Button -->
+                        <button type="button" id="convert-button" 
+                            class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 
+                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+                            transform transition-transform duration-200 hover:scale-[1.02]">
+                            <i class="fas fa-sync-alt mr-2"></i>Convert Now
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Preview Section -->
+                <div id="download-links" class="p-6 bg-gray-50">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-images mr-2"></i>Converted Images
+                    </h2>
+                    <div id="image-previews" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
             </div>
-            <button type="button" id="convert-button" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Convert</button>
-        </form>
-        <div id="download-links" class="mt-4 space-y-2">
-            <h2 class="text-lg font-semibold">Converted Images</h2>
-            <div id="image-previews" class="grid grid-cols-2 gap-4"></div>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center text-gray-600 text-sm">
+                <p>Secure and private conversion - Your files never leave your browser</p>
+            </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
     <script src="heic-to.js"></script>
 </body>
