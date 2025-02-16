@@ -16,17 +16,14 @@ export default {
 		const url = new URL(request.url);
 		let path = url.pathname;
 
-		// Serve index.html for root path
-		if (path === '/') {
-			path = '/matrix.html';
-		}
-
 		// Construct the file path
 		let filePath = `./pages${path}`;
 
-		// Append .html if not present
-		if (!filePath.endsWith('.html')) {
+		// Append .html if not present and path does not end with a slash
+		if (!filePath.endsWith('.html') && !filePath.endsWith('/')) {
 			filePath += '.html';
+		} else if (filePath.endsWith('/')) {
+			filePath += 'index.html';
 		}
 
 		try {
