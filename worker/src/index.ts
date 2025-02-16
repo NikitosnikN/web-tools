@@ -13,6 +13,28 @@
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
+		const url = new URL(request.url);
+		let path = url.pathname;
+
+		// Serve index.html for root path
+		if (path === '/') {
+			path = '/matrix.html';
+		}
+
+		// Construct the file path
+		const filePath = `./pages${path}`;
+
+		try {
+			// Fetch the file from the worker's KV or local storage
+			const file = await env.ASSETS.fetch(filePath);
+			if (file.ok) {
+				return file;
+			}
+		} catch (error) {
+			console.error('Error fetching file:', error);
+		}
+
+		// Return 404 if file not found
+		return new Response('404 Not Found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
