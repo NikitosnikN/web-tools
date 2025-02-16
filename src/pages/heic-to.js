@@ -1,3 +1,5 @@
+import heic2any from "heic2any";
+
 document.getElementById('convert-button').addEventListener('click', async () => {
     const files = document.getElementById('file-input').files;
     const format = document.getElementById('format-select').value;
@@ -23,7 +25,15 @@ document.getElementById('convert-button').addEventListener('click', async () => 
 });
 
 async function convertHeicToFormat(file, format) {
-    // Placeholder function for actual conversion logic
-    // This should be replaced with actual conversion code
-    return new Blob([file], { type: `image/${format}` });
+    try {
+        const convertedBlob = await heic2any({
+            blob: file,
+            toType: `image/${format}`
+        });
+        return convertedBlob;
+    } catch (error) {
+        console.error("Conversion failed:", error);
+        alert("Failed to convert the file. Please try again.");
+        throw error;
+    }
 }
