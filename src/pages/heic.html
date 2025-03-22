@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIC to PNG Converter</title>
+    <title>HEIC to PNG Converter - Web Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -71,30 +72,33 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <header class="flex justify-between items-center mb-10">
-            <div class="text-center flex-grow">
-                <h1 class="text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2">HEIC Image Converter</h1>
-                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Convert your iPhone HEIC photos to PNG or JPEG format easily. Upload multiple files, preview them, and download them all at once.</p>
-            </div>
-            <button id="theme-toggle" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 ml-4">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-6xl flex-grow flex flex-col">
+        <!-- Header with theme toggle and back button -->
+        <header class="flex justify-between items-center mb-8">
+            <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                <span>Back to Tools</span>
+            </a>
+            <button id="theme-toggle" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 w-10 h-10 flex items-center justify-center">
                 <!-- Sun icon for dark mode -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <i class="fas fa-sun text-gray-800 dark:hidden text-lg"></i>
                 <!-- Moon icon for light mode -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+                <i class="fas fa-moon text-white hidden dark:block text-lg"></i>
             </button>
         </header>
 
-        <main>
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2">HEIC Image Converter</h1>
+            <p class="text-gray-600 dark:text-gray-300">Convert your iPhone HEIC photos to PNG or JPEG format easily. Upload multiple files, preview them, and download them all at once.</p>
+        </div>
+        
+        <!-- Main Content Area -->
+        <main class="flex-grow">
             <!-- Format Selection -->
             <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Output Format</h2>
-                <div class="flex items-center space-x-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                     <label class="inline-flex items-center">
                         <input type="radio" name="format" value="png" class="form-radio h-5 w-5 text-primary-600" checked>
                         <span class="ml-2 text-gray-700 dark:text-gray-200">PNG</span>
@@ -165,14 +169,16 @@
             </div>
         </main>
 
-        <footer class="mt-16 text-center text-gray-500 dark:text-gray-400 text-sm">
-            <p>All processing happens in your browser. Your files are never uploaded to any server.</p>
+        <footer class="mt-auto text-center text-gray-500 dark:text-gray-400 text-sm py-4 border-t border-gray-200 dark:border-gray-700">
+            <p>© 2025 Web Tools. All tools work entirely in your browser.</p>
+            <p class="mt-2">No data is sent to any server. Your privacy is respected.</p>
         </footer>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // DOM Elements
+            const themeToggle = document.getElementById('theme-toggle');
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('file-input');
             const browseBtn = document.getElementById('browse-btn');
