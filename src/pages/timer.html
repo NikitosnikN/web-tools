@@ -134,7 +134,7 @@
 
     <!-- Audio for timer completion -->
     <audio id="timer-sound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3" type="audio/mpeg">
+        <source src="https://cf-cdn.belikewater.xyz/ocean-wave.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -239,10 +239,30 @@
                 pauseTimer();
                 timerStatus.textContent = 'Completed';
                 
-                // Play sound
-                timerSound.play().catch(error => {
-                    console.error('Error playing sound:', error);
-                });
+                // Play sound 3 times
+                let playCount = 0;
+                
+                function playSound() {
+                    if (playCount < 3) {
+                        timerSound.play().then(() => {
+                            playCount++;
+                        }).catch(error => {
+                            console.error('Error playing sound:', error);
+                        });
+                    }
+                }
+                
+                // Play first time
+                playSound();
+                
+                // Set up event listener for when audio ends to play again
+                timerSound.onended = function() {
+                    if (playCount < 3) {
+                        playSound();
+                    } else {
+                        timerSound.onended = null; // Remove event listener after 3 plays
+                    }
+                };
                 
                 // Trigger vibration if supported
                 if ('vibrate' in navigator) {
