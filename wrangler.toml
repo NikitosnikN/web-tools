@@ -6,11 +6,11 @@ compatibility_date = "2023-09-22"
 directory = "./src/pages"
 binding = "ASSETS"
 
-[route]
+[[routes]]
 pattern = "tools.belikewater.xyz"
 custom_domain = true
 
-[route]
+[[routes]]
 pattern = "tools.nikitayugov.com"
 custom_domain = true
 
