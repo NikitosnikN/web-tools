@@ -43,8 +43,32 @@ app.all('*', async (c) => {
   // Create a new request with the updated URL
   const newRequest = new Request(url.toString(), c.req.raw);
   
-  // Use the ASSETS binding to fetch the static file
-  return await c.env.ASSETS.fetch(newRequest);
+  try {
+    // Use the ASSETS binding to fetch the static file
+    const response = await c.env.ASSETS.fetch(newRequest);
+    
+    // If the response is not ok (e.g., 404), serve the custom 404 page
+    if (!response.ok && response.status === 404) {
+      // Create a new request for the 404 page
+      const notFoundRequest = new Request(new URL('/404.html', c.req.url).toString(), c.req.raw);
+      const notFoundResponse = await c.env.ASSETS.fetch(notFoundRequest);
+      
+      // Return the 404 page with the correct status code
+      return new Response(notFoundResponse.body, {
+        status: 404,
+        headers: notFoundResponse.headers
+      });
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Error serving file:', error);
+    
+    // Fallback to a simple error message if something goes wrong
+    return new Response('An error occurred while serving the requested file', { 
+      status: 500 
+    });
+  }
 });
 
 export default app;
