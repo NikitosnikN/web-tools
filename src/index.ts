@@ -10,14 +10,6 @@ interface Env {
 // Create a new Hono app with the Env interface
 const app = new Hono<{ Bindings: Env }>();
 
-// API endpoint example
-app.get('/api/hello', (c) => {
-  return c.json({
-    message: 'Hello from Hono API!',
-    timestamp: new Date().toISOString()
-  });
-});
-
 // For all other routes, use the ASSETS binding to serve static files
 app.all('*', async (c) => {
   const url = new URL(c.req.url);
