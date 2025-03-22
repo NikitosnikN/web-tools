@@ -1,0 +1,37 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+deploy:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  needs:
+    - build
+  script:
+    - npm ci
+    - npm install -g wrangler
+    - echo "CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN" > .env
+    - wrangler deploy
+  environment:
+    name: production
+    url: https://${CI_PROJECT_NAME}.${CLOUDFLARE_WORKERS_DOMAIN}
+  only:
+    - main
