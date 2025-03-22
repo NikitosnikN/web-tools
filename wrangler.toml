@@ -2,10 +2,6 @@ name = "test"
 main = "src/index.ts"
 compatibility_date = "2023-09-22"
 
-# Configure static assets
-[site]
-bucket = "./src/pages"
-
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
 # Docs: https://developers.cloudflare.com/workers/platform/environment-variables
