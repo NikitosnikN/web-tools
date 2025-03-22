@@ -27,11 +27,28 @@
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <header class="mb-10 text-center">
-            <h1 class="text-4xl font-bold text-indigo-600 mb-2">HEIC to PNG Converter</h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">Convert your iPhone HEIC photos to PNG format easily. Upload multiple files, preview them, and download them all at once.</p>
+            <h1 class="text-4xl font-bold text-indigo-600 mb-2">HEIC Image Converter</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Convert your iPhone HEIC photos to PNG or JPEG format easily. Upload multiple files, preview them, and download them all at once.</p>
         </header>
 
         <main>
+            <!-- Format Selection -->
+            <div class="mb-6 bg-white rounded-lg p-6 shadow-sm">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Output Format</h2>
+                <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="format" value="png" class="form-radio h-5 w-5 text-indigo-600" checked>
+                        <span class="ml-2 text-gray-700">PNG</span>
+                        <span class="ml-1 text-xs text-gray-500">(Better quality, larger files)</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="format" value="jpeg" class="form-radio h-5 w-5 text-indigo-600">
+                        <span class="ml-2 text-gray-700">JPEG</span>
+                        <span class="ml-1 text-xs text-gray-500">(Smaller files, slight quality loss)</span>
+                    </label>
+                </div>
+            </div>
+            
             <!-- Upload Section -->
             <div id="upload-section" class="mb-8">
                 <div id="drop-zone" class="drop-zone rounded-lg p-8 text-center cursor-pointer bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -217,13 +234,18 @@
                 convertedFiles = [];
                 let completedCount = 0;
                 
+                // Get selected format
+                const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+                const outputMimeType = selectedFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+                const outputExtension = selectedFormat === 'jpeg' ? '.jpg' : '.png';
+                
                 const conversionPromises = files.map((file, index) => {
                     return new Promise((resolve) => {
                         const reader = new FileReader();
                         
                         reader.onload = async (event) => {
                             try {
-                                // Convert HEIC to PNG using heic2any
+                                // Convert HEIC to selected format using heic2any
                                 const blob = new Blob([event.target.result]);
                                 
                                 // Simulate progress updates
@@ -235,10 +257,10 @@
                                     }
                                 }, 100);
                                 
-                                const pngBlob = await heic2any({
+                                const convertedBlob = await heic2any({
                                     blob,
-                                    toType: 'image/png',
-                                    quality: 0.8
+                                    toType: outputMimeType,
+                                    quality: selectedFormat === 'jpeg' ? 0.9 : 0.8
                                 });
                                 
                                 clearInterval(interval);
@@ -246,15 +268,15 @@
                                 
                                 // Create a name for the converted file
                                 const originalName = file.name.replace(/\.heic$/i, '');
-                                const pngName = `${originalName}.png`;
+                                const newFileName = `${originalName}${outputExtension}`;
                                 
                                 // Create a URL for the converted image
-                                const pngUrl = URL.createObjectURL(pngBlob);
+                                const imageUrl = URL.createObjectURL(convertedBlob);
                                 
                                 convertedFiles.push({
-                                    name: pngName,
-                                    url: pngUrl,
-                                    blob: pngBlob
+                                    name: newFileName,
+                                    url: imageUrl,
+                                    blob: convertedBlob
                                 });
                                 
                                 completedCount++;
@@ -366,6 +388,9 @@
                     URL.revokeObjectURL(file.url);
                 });
                 convertedFiles = [];
+                
+                // Reset format selection to default (PNG)
+                document.querySelector('input[name="format"][value="png"]').checked = true;
             }
         });
     </script>
