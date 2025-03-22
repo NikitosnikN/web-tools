@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc",
     "deploy": "wrangler deploy"
   },
   "author": "",
