@@ -2,12 +2,13 @@ document.getElementById('convert-button').addEventListener('click', async () => 
     const files = document.getElementById('file-input').files;
     const format = document.getElementById('format-select').value;
     const downloadLinks = document.getElementById('download-links');
+    const imagePreviews = document.getElementById('image-previews');
     downloadLinks.innerHTML = '';
+    imagePreviews.innerHTML = '';
 
     if (files.length === 0) {
         alert('Please upload at least one HEIC file.');
         return;
-        document.getElementById('image-previews').appendChild(imagePreview);
     }
 
     for (let file of files) {
