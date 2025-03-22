@@ -1,11 +1,14 @@
 import { Hono } from 'hono';
-import { serveStatic } from 'hono/cloudflare-workers';
 
-// Create a new Hono app
-const app = new Hono();
+// Define the environment interface with ASSETS binding
+interface Env {
+  ASSETS: {
+    fetch: typeof fetch;
+  };
+}
 
-// Redirect root to index.html
-app.get('/', (c) => c.redirect('/index.html'));
+// Create a new Hono app with the Env interface
+const app = new Hono<{ Bindings: Env }>();
 
 // API endpoint example
 app.get('/api/hello', (c) => {
@@ -15,7 +18,17 @@ app.get('/api/hello', (c) => {
   });
 });
 
-// Serve static files from the pages directory
-app.get('/*', serveStatic({ root: './src/pages' }));
+// For all other routes, use the ASSETS binding to serve static files
+app.all('*', async (c) => {
+  const url = new URL(c.req.url);
+  
+  // Redirect root to index.html
+  if (url.pathname === '/') {
+    url.pathname = '/index.html';
+  }
+  
+  // Use the ASSETS binding to fetch the static file
+  return await c.env.ASSETS.fetch(c.req.raw);
+});
 
 export default app;
