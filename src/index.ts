@@ -1,40 +1,70 @@
 import { Hono } from 'hono';
-import fs from 'node:fs';
-import path from 'node:path';
 
+// Create a new Hono app
 const app = new Hono();
 
-// Redirect root to heic-to page
-app.get('/', (c) => c.redirect('/heic-to'));
+// Define routes
+app.get('/', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Hono Hello World</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          background-color: #f0f2f5;
+        }
+        .container {
+          text-align: center;
+          padding: 2rem;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+          color: #4a5568;
+        }
+        p {
+          color: #718096;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Hello, World!</h1>
+        <p>Welcome to my Hono + Cloudflare Workers site.</p>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// API endpoint example
+app.get('/api/hello', (c) => {
+  return c.json({
+    message: 'Hello from Hono API!',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Serve static files from the pages directory
-app.get('/heic-to', async (c) => {
-  const content = await fs.promises.readFile(path.join(process.cwd(), 'src/pages/heic-to.html'), 'utf8');
-  return c.html(content);
-});
-
-app.get('/heic-to.js', async (c) => {
-  const content = await fs.promises.readFile(path.join(process.cwd(), 'src/pages/heic-to.js'), 'utf8');
-  return c.header('Content-Type', 'application/javascript').body(content);
-});
-
-// Catch-all route for any other static files in the pages directory
-app.get('/*', async (c) => {
-  const filePath = c.req.path.replace(/^\//, '');
-  try {
-    const content = await fs.promises.readFile(path.join(process.cwd(), 'src/pages', filePath), 'utf8');
-    const ext = path.extname(filePath);
-    let contentType = 'text/plain';
-    
-    if (ext === '.html') contentType = 'text/html';
-    else if (ext === '.js') contentType = 'application/javascript';
-    else if (ext === '.css') contentType = 'text/css';
-    else if (ext === '.json') contentType = 'application/json';
-    
-    return c.header('Content-Type', contentType).body(content);
-  } catch (error) {
-    return c.notFound();
+app.get('/static/*', async (c) => {
+  const path = c.req.path.replace('/static/', '');
+  
+  // For demonstration, we'll just serve the index.html file
+  if (path === 'index.html' || path === '') {
+    return c.redirect('/');
   }
+  
+  return c.notFound();
 });
 
 export default app;
