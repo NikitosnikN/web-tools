@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HEIC to PNG Converter - Web Tools</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script type="module">
+        import { heicTo } from 'https://cdn.jsdelivr.net/npm/heic-to@1.1.0/dist/heic-to.min.js';
+        window.heicTo = heicTo; // Make it available globally
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -322,10 +325,10 @@
                                     }
                                 }, 100);
                                 
-                                const convertedBlob = await heic2any({
-                                    blob,
-                                    toType: outputMimeType,
-                                    quality: selectedFormat === 'jpeg' ? 0.9 : 0.8
+                                const convertedBlob = await window.heicTo({
+                                    blob: file,
+                                    type: outputMimeType,
+                                    quality: selectedFormat === 'jpeg' ? 0.9 : 1
                                 });
                                 
                                 clearInterval(interval);
