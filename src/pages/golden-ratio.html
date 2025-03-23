@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Ratio Visualization - Web Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+    </script>
+    <style>
+        #animation-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-6xl flex-grow flex flex-col">
+        <!-- Header with theme toggle and back button -->
+        <header class="flex justify-between items-center mb-8">
+            <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                <span>Back to Tools</span>
+            </a>
+            <button id="theme-toggle" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 w-10 h-10 flex items-center justify-center">
+                <!-- Sun icon for dark mode -->
+                <i class="fas fa-sun text-gray-800 dark:hidden text-lg"></i>
+                <!-- Moon icon for light mode -->
+                <i class="fas fa-moon text-white hidden dark:block text-lg"></i>
+            </button>
+        </header>
+
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2">Golden Ratio Visualization</h1>
+            <p class="text-gray-600 dark:text-gray-300">An interactive 3D visualization of the Golden Ratio (φ ≈ 1.618)</p>
+        </div>
+        
+        <!-- Main Content Area -->
+        <main class="flex-grow flex flex-col items-center">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 w-full max-w-4xl mb-8">
+                <!-- Animation container -->
+                <div id="animation-container" class="mb-6">
+                    <div class="control-panel">
+                        <button id="pause-btn" class="control-btn bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button id="reset-btn" class="control-btn bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button id="zoom-in-btn" class="control-btn bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button id="zoom-out-btn" class="control-btn bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Explanation section -->
+                <div class="text-gray-700 dark:text-gray-300 space-y-4">
+                    <h2 class="text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-3">What is the Golden Ratio?</h2>
+                    <p>The Golden Ratio (φ or phi) is approximately equal to 1.618 and is often found in nature, art, and architecture. It represents a special mathematical relationship where a line is divided in such a way that the ratio of the whole line to the larger segment equals the ratio of the larger segment to the smaller segment.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-6 my-6">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-primary-600 dark:text-primary-400 mb-2">Mathematical Definition</h3>
+                            <p>Mathematically, the Golden Ratio is defined as:</p>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-md my-2 text-center">
+                                <span class="text-lg">φ = (1 + √5) / 2 ≈ 1.618033988749895...</span>
+                            </div>
+                            <p>This irrational number has unique properties that make it appear throughout mathematics and nature.</p>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-primary-600 dark:text-primary-400 mb-2">The Golden Spiral</h3>
+                            <p>The visualization above shows a 3D Golden Spiral, which is created by drawing arcs connecting the opposite corners of squares in the Fibonacci tiling. Each new element grows according to the Golden Ratio, creating a harmonious and aesthetically pleasing pattern.</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-semibold text-primary-600 dark:text-primary-400 mb-2">Where It Appears</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Nature:</strong> Found in the arrangement of leaves on stems, the spirals of shells, the family tree of honeybees, and the spiral of galaxies.</li>
+                        <li><strong>Art:</strong> Used by artists like Leonardo da Vinci in compositions like the Mona Lisa and The Last Supper.</li>
+                        <li><strong>Architecture:</strong> Present in the proportions of the Parthenon in Athens and many modern buildings.</li>
+                        <li><strong>Design:</strong> Utilized in logo design, product layouts, and web design for aesthetic appeal.</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer class="mt-auto text-center text-gray-500 dark:text-gray-400 text-sm py-4 border-t border-gray-200 dark:border-gray-700">
+            <p>© 2025 Web Tools. All tools work entirely in your browser.</p>
+            <p class="mt-2">No data is sent to any server. Your privacy is respected.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const themeToggle = document.getElementById('theme-toggle');
+            const container = document.getElementById('animation-container');
+            const pauseBtn = document.getElementById('pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const zoomInBtn = document.getElementById('zoom-in-btn');
+            const zoomOutBtn = document.getElementById('zoom-out-btn');
+            
+            // Three.js variables
+            let scene, camera, renderer, animationId;
+            let goldenRatioObjects = [];
+            let isAnimating = true;
+            
+            // Constants
+            const GOLDEN_RATIO = 1.61803398875;
+            const MAX_OBJECTS = 200;
+            
+            // Initialize the scene
+            function init() {
+                // Create scene
+                scene = new THREE.Scene();
+                
+                // Set up camera
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+                camera.position.z = 30;
+                
+                // Set up renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(width, height);
+                renderer.setClearColor(0x000000, 0);
+                
+                // Clear container and add renderer
+                while (container.firstChild) {
+                    if (container.firstChild.classList && container.firstChild.classList.contains('control-panel')) {
+                        break;
+                    }
+                    container.removeChild(container.firstChild);
+                }
+                container.insertBefore(renderer.domElement, container.firstChild);
+                
+                // Add lights
+                const ambientLight = new THREE.AmbientLight(0x404040, 1);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(1, 1, 1);
+                scene.add(directionalLight);
+                
+                // Create golden ratio spiral
+                createGoldenRatioSpiral();
+                
+                // Handle window resize
+                window.addEventListener('resize', onWindowResize);
+                
+                // Start animation
+                animate();
+            }
+            
+            // Create the golden ratio spiral
+            function createGoldenRatioSpiral() {
+                // Clear existing objects
+                goldenRatioObjects.forEach(obj => scene.remove(obj));
+                goldenRatioObjects = [];
+                
+                // Golden ratio parameters
+                let angle = 0;
+                let radius = 0.1;
+                let height = 0.1;
+                
+                // Create objects following golden ratio
+                for (let i = 0; i < MAX_OBJECTS; i++) {
+                    // Calculate position based on golden spiral
+                    radius *= GOLDEN_RATIO / 4;
+                    angle += Math.PI / 2;
+                    height += 0.05 * GOLDEN_RATIO;
+                    
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    const z = height * 0.2;
+                    
+                    // Create object (cube or sphere)
+                    let geometry, material, mesh;
+                    
+                    if (i % 2 === 0) {
+                        // Create cube
+                        const size = 0.1 + (i / MAX_OBJECTS) * 0.5;
+                        geometry = new THREE.BoxGeometry(size, size, size);
+                        
+                        // Color based on position in spiral
+                        const hue = (i / MAX_OBJECTS) * 360;
+                        material = new THREE.MeshPhongMaterial({
+                            color: new THREE.Color(`hsl(${hue}, 100%, 50%)`),
+                            transparent: true,
+                            opacity: 0.8,
+                            shininess: 30
+                        });
+                        
+                        mesh = new THREE.Mesh(geometry, material);
+                    } else {
+                        // Create sphere
+                        const size = 0.05 + (i / MAX_OBJECTS) * 0.4;
+                        geometry = new THREE.SphereGeometry(size, 16, 16);
+                        
+                        // Color based on position in spiral
+                        const hue = ((i / MAX_OBJECTS) * 360 + 180) % 360;
+                        material = new THREE.MeshPhongMaterial({
+                            color: new THREE.Color(`hsl(${hue}, 100%, 50%)`),
+                            transparent: true,
+                            opacity: 0.8,
+                            shininess: 50
+                        });
+                        
+                        mesh = new THREE.Mesh(geometry, material);
+                    }
+                    
+                    mesh.position.set(x, y, z);
+                    mesh.rotation.x = angle * 0.2;
+                    mesh.rotation.y = angle * 0.1;
+                    
+                    scene.add(mesh);
+                    goldenRatioObjects.push(mesh);
+                }
+            }
+            
+            // Animation loop
+            function animate() {
+                animationId = requestAnimationFrame(animate);
+                
+                if (isAnimating) {
+                    // Rotate the entire scene
+                    scene.rotation.y += 0.003;
+                    scene.rotation.x = Math.sin(Date.now() * 0.0005) * 0.2;
+                    
+                    // Animate individual objects
+                    goldenRatioObjects.forEach((obj, index) => {
+                        obj.rotation.x += 0.001 * (index % 3 + 1);
+                        obj.rotation.y += 0.001 * (index % 2 + 1);
+                    });
+                }
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Handle window resize
+            function onWindowResize() {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+            
+            // Initialize the visualization
+            init();
+            
+            // Event listeners for controls
+            pauseBtn.addEventListener('click', () => {
+                isAnimating = !isAnimating;
+                pauseBtn.innerHTML = isAnimating ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                scene.rotation.set(0, 0, 0);
+                camera.position.z = 30;
+                createGoldenRatioSpiral();
+            });
+            
+            zoomInBtn.addEventListener('click', () => {
+                if (camera.position.z > 5) {
+                    camera.position.z -= 5;
+                }
+            });
+            
+            zoomOutBtn.addEventListener('click', () => {
+                if (camera.position.z < 100) {
+                    camera.position.z += 5;
+                }
+            });
+            
+            // Add mouse/touch interaction for rotation
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = {
+                    x: e.clientX,
+                    y: e.clientY
+                };
+            });
+            
+            container.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaMove = {
+                        x: e.clientX - previousMousePosition.x,
+                        y: e.clientY - previousMousePosition.y
+                    };
+                    
+                    scene.rotation.y += deltaMove.x * 0.005;
+                    scene.rotation.x += deltaMove.y * 0.005;
+                    
+                    previousMousePosition = {
+                        x: e.clientX,
+                        y: e.clientY
+                    };
+                }
+            });
+            
+            container.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                isDragging = false;
+            });
+            
+            // Handle dark mode changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        // Recreate the spiral with new colors if dark mode changes
+                        createGoldenRatioSpiral();
+                    }
+                });
+            });
+            
+            observer.observe(document.documentElement, { attributes: true });
+        });
+    </script>
+</body>
+</html>
