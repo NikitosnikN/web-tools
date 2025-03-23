@@ -230,8 +230,8 @@
                 if (depth > maxDepth) return;
                 
                 // Calculate endpoint
-                const endX = startX + length * Math.cos(angle);
-                const endY = startY - length * Math.sin(angle);
+                const endX = startX + length * Math.sin(angle);
+                const endY = startY - length * Math.cos(angle);
                 
                 // Calculate color gradient from trunk to leaf
                 let color;
@@ -307,7 +307,7 @@
                 const startY = canvas.height - 50;
                 const length = parseInt(branchLengthSlider.value);
                 
-                drawTree(startX, startY, length, 0, 0, currentIteration);
+                drawTree(startX, startY, length, -Math.PI/2, 0, currentIteration);
                 
                 // Increment iteration based on animation speed
                 currentIteration += 0.1 * animationSpeed;
