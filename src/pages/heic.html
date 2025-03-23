@@ -232,7 +232,8 @@
                 // Filter HEIC files - iPhones may use different extensions or MIME types
                 const heicFiles = Array.from(files).filter(file => {
                     // Check file extension (case insensitive)
-                    const hasHeicExtension = file.name.toLowerCase().endsWith('.heic');
+                    const hasHeicExtension = file.name.toLowerCase().endsWith('.heic') || 
+                                            file.name.toLowerCase().endsWith('.heif');
                     
                     // Check MIME type (iPhones may use image/heic or image/heif)
                     const isHeicMimeType = file.type === 'image/heic' || 
