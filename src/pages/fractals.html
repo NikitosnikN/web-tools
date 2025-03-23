@@ -229,9 +229,9 @@
             function drawTree(startX, startY, length, angle, depth, maxDepth) {
                 if (depth > maxDepth) return;
                 
-                // Calculate endpoint
-                const endX = startX + length * Math.sin(angle);
-                const endY = startY - length * Math.cos(angle);
+                // Calculate endpoint - rotated 90 degrees clockwise
+                const endX = startX + length * Math.cos(angle);
+                const endY = startY + length * Math.sin(angle);
                 
                 // Calculate color gradient from trunk to leaf
                 let color;
@@ -302,12 +302,12 @@
                 // Clear canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw tree with current iteration
+                // Draw tree with current iteration - centered and rotated
                 const startX = canvas.width / 2;
-                const startY = canvas.height - 50;
+                const startY = canvas.height / 2;
                 const length = parseInt(branchLengthSlider.value);
                 
-                drawTree(startX, startY, length, -Math.PI/2, 0, currentIteration);
+                drawTree(startX, startY, length, 0, 0, currentIteration);
                 
                 // Increment iteration based on animation speed
                 currentIteration += 0.1 * animationSpeed;
