@@ -132,28 +132,19 @@ Custom domains:
   - hono: Lightweight web framework
   - typescript: Language support
   - wrangler: Cloudflare Workers CLI tool
-# QR Code Scanner Implementation
+### Available Tools (continued)
 
-## Overview
-Added a QR code scanner page that allows users to scan QR codes using their device's camera in real-time.
+7. **QR Code Scanner**: Scan QR codes using your device's camera
+   - Real-time scanning using the device's camera
+   - Display of scan results without redirecting to external links
+   - Detection of URLs in QR codes
+   - Start/stop controls for the scanner
+   - Uses the html5-qrcode library for QR code scanning functionality
 
-## Features
-- Real-time QR code scanning using the device's camera
-- Display of scan results without redirecting to external links
-- Detection of URLs in QR codes
-- Start/stop controls for the scanner
-- Responsive design with dark/light mode support
-
-## Implementation Details
-- Used the html5-qrcode library for QR code scanning functionality
-- Created the page based on the existing template.html structure
-- Implemented result display that shows URLs as text rather than redirecting
-- Added visual feedback for successful scans
-
-## File Changes
-- Created `src/pages/qr.html` (originally named qr-scanner.html)
-
-## Technical Notes
-- The scanner works entirely client-side with no server communication
-- Camera access requires user permission
-- Compatible with modern browsers that support the MediaDevices API
+8. **QR Code Creator**: Generate QR codes for various types of content
+   - Support for multiple QR code types: URLs, text, email, phone, SMS, WiFi, vCard
+   - Customizable error correction levels
+   - Download generated QR codes as PNG files
+   - Share QR codes using the Web Share API (on supported browsers)
+   - Uses the qrcode.js library for QR code generation
+   - All processing happens client-side for complete privacy
