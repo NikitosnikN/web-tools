@@ -8,14 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- QR Code generation library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <style>
-        .dark-mode {
-            @apply bg-gray-900 text-white;
-        }
-        .light-mode {
-            @apply bg-white text-gray-900;
-        }
-    </style>
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -45,31 +37,44 @@
                 }
             }
         }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
     </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">QR Code Creator</h1>
-                <div class="flex space-x-4">
-                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-moon dark:hidden"></i>
-                        <i class="fas fa-sun hidden dark:block"></i>
-                    </button>
-                    <a href="/" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <i class="fas fa-home"></i>
-                    </a>
-                </div>
-            </div>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Create QR codes for various types of content. All processing happens in your browser - no data is sent to any server.
-            </p>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
+    <div class="container mx-auto px-4 py-8 max-w-6xl flex-grow flex flex-col">
+        <!-- Header with theme toggle and back button -->
+        <header class="flex justify-between items-center mb-8">
+            <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                <span>Back to Tools</span>
+            </a>
+            <button id="theme-toggle" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 w-10 h-10 flex items-center justify-center">
+                <!-- Sun icon for dark mode -->
+                <i class="fas fa-sun text-gray-800 dark:hidden text-lg"></i>
+                <!-- Moon icon for light mode -->
+                <i class="fas fa-moon text-white hidden dark:block text-lg"></i>
+            </button>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">QR Code Settings</h2>
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2">QR Code Creator</h1>
+            <p class="text-gray-600 dark:text-gray-300">Create QR codes for various types of content. All processing happens in your browser - no data is sent to any server.</p>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 text-primary-600 dark:text-primary-400">QR Code Settings</h2>
                 
                 <div class="mb-4">
                     <label for="qr-type" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">QR Code Type</label>
@@ -232,10 +237,10 @@
                 </button>
             </div>
 
-            <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Your QR Code</h2>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                    <h2 class="text-xl font-semibold mb-4 text-primary-600 dark:text-primary-400">Your QR Code</h2>
                 
-                <div id="qr-container" class="flex justify-center items-center bg-white p-4 rounded-lg mb-4 w-64 h-64">
+                    <div id="qr-container" class="flex justify-center items-center bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4 w-64 h-64">
                     <p class="text-gray-500 text-center">Your QR code will appear here</p>
                 </div>
 
@@ -246,253 +251,241 @@
                     <button id="share-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition-colors">
                         <i class="fas fa-share-alt mr-2"></i> Share QR Code
                     </button>
+                    </div>
                 </div>
             </div>
         </main>
 
-        <footer class="mt-12 text-center text-gray-600 dark:text-gray-400">
-            <p>All processing happens in your browser - no data is sent to any server.</p>
-            <p class="mt-2">
-                <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline">Back to Home</a>
-            </p>
+        <footer class="mt-auto text-center text-gray-500 dark:text-gray-400 text-sm py-4 border-t border-gray-200 dark:border-gray-700">
+            <p>© 2025 Web Tools. All tools work entirely in your browser.</p>
+            <p class="mt-2">No data is sent to any server. Your privacy is respected.</p>
         </footer>
     </div>
 
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
-        
-        themeToggle.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        });
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // QR Code type selection
-        const qrTypeSelect = document.getElementById('qr-type');
-        const formFields = {
-            url: document.getElementById('url-fields'),
-            text: document.getElementById('text-fields'),
-            email: document.getElementById('email-fields'),
-            phone: document.getElementById('phone-fields'),
-            sms: document.getElementById('sms-fields'),
-            wifi: document.getElementById('wifi-fields'),
-            vcard: document.getElementById('vcard-fields')
-        };
+            // QR Code type selection
+            const qrTypeSelect = document.getElementById('qr-type');
+            const formFields = {
+                url: document.getElementById('url-fields'),
+                text: document.getElementById('text-fields'),
+                email: document.getElementById('email-fields'),
+                phone: document.getElementById('phone-fields'),
+                sms: document.getElementById('sms-fields'),
+                wifi: document.getElementById('wifi-fields'),
+                vcard: document.getElementById('vcard-fields')
+            };
 
-        qrTypeSelect.addEventListener('change', () => {
-            // Hide all form fields
-            Object.values(formFields).forEach(field => {
-                field.classList.add('hidden');
+            qrTypeSelect.addEventListener('change', () => {
+                // Hide all form fields
+                Object.values(formFields).forEach(field => {
+                    field.classList.add('hidden');
+                });
+                
+                // Show selected form fields
+                const selectedType = qrTypeSelect.value;
+                formFields[selectedType].classList.remove('hidden');
             });
-            
-            // Show selected form fields
-            const selectedType = qrTypeSelect.value;
-            formFields[selectedType].classList.remove('hidden');
-        });
 
-        // Generate QR Code
-        const generateBtn = document.getElementById('generate-btn');
-        const qrContainer = document.getElementById('qr-container');
-        const actionButtons = document.getElementById('action-buttons');
-        const downloadBtn = document.getElementById('download-btn');
-        const shareBtn = document.getElementById('share-btn');
-        
-        let currentQrCode = null;
+            // Generate QR Code
+            const generateBtn = document.getElementById('generate-btn');
+            const qrContainer = document.getElementById('qr-container');
+            const actionButtons = document.getElementById('action-buttons');
+            const downloadBtn = document.getElementById('download-btn');
+            const shareBtn = document.getElementById('share-btn');
+            
+            let currentQrCode = null;
 
-        generateBtn.addEventListener('click', () => {
-            const qrType = qrTypeSelect.value;
-            const errorCorrectionLevel = document.getElementById('error-correction').value;
-            let qrData = '';
-            
-            // Prepare QR data based on type
-            switch (qrType) {
-                case 'url':
-                    qrData = document.getElementById('url-input').value.trim();
-                    if (!qrData) {
-                        alert('Please enter a URL');
-                        return;
-                    }
-                    if (!qrData.startsWith('http://') && !qrData.startsWith('https://')) {
-                        qrData = 'https://' + qrData;
-                    }
-                    break;
-                    
-                case 'text':
-                    qrData = document.getElementById('text-input').value.trim();
-                    if (!qrData) {
-                        alert('Please enter some text');
-                        return;
-                    }
-                    break;
-                    
-                case 'email':
-                    const emailAddress = document.getElementById('email-address').value.trim();
-                    const emailSubject = document.getElementById('email-subject').value.trim();
-                    const emailBody = document.getElementById('email-body').value.trim();
-                    
-                    if (!emailAddress) {
-                        alert('Please enter an email address');
-                        return;
-                    }
-                    
-                    qrData = `mailto:${emailAddress}`;
-                    if (emailSubject || emailBody) {
-                        qrData += '?';
-                        if (emailSubject) qrData += `subject=${encodeURIComponent(emailSubject)}`;
-                        if (emailSubject && emailBody) qrData += '&';
-                        if (emailBody) qrData += `body=${encodeURIComponent(emailBody)}`;
-                    }
-                    break;
-                    
-                case 'phone':
-                    const phoneNumber = document.getElementById('phone-number').value.trim();
-                    if (!phoneNumber) {
-                        alert('Please enter a phone number');
-                        return;
-                    }
-                    qrData = `tel:${phoneNumber}`;
-                    break;
-                    
-                case 'sms':
-                    const smsNumber = document.getElementById('sms-number').value.trim();
-                    const smsMessage = document.getElementById('sms-message').value.trim();
-                    
-                    if (!smsNumber) {
-                        alert('Please enter a phone number');
-                        return;
-                    }
-                    
-                    qrData = `smsto:${smsNumber}`;
-                    if (smsMessage) {
-                        qrData += `:${smsMessage}`;
-                    }
-                    break;
-                    
-                case 'wifi':
-                    const wifiSsid = document.getElementById('wifi-ssid').value.trim();
-                    const wifiPassword = document.getElementById('wifi-password').value;
-                    const wifiEncryption = document.getElementById('wifi-encryption').value;
-                    const wifiHidden = document.getElementById('wifi-hidden').checked;
-                    
-                    if (!wifiSsid) {
-                        alert('Please enter a network name (SSID)');
-                        return;
-                    }
-                    
-                    qrData = `WIFI:S:${wifiSsid};`;
-                    if (wifiEncryption !== 'nopass') {
-                        qrData += `T:${wifiEncryption};P:${wifiPassword};`;
-                    } else {
-                        qrData += 'T:nopass;';
-                    }
-                    if (wifiHidden) {
-                        qrData += 'H:true;';
-                    }
-                    qrData += ';';
-                    break;
-                    
-                case 'vcard':
-                    const vcardName = document.getElementById('vcard-name').value.trim();
-                    const vcardCompany = document.getElementById('vcard-company').value.trim();
-                    const vcardTitle = document.getElementById('vcard-title').value.trim();
-                    const vcardPhone = document.getElementById('vcard-phone').value.trim();
-                    const vcardEmail = document.getElementById('vcard-email').value.trim();
-                    const vcardWebsite = document.getElementById('vcard-website').value.trim();
-                    const vcardAddress = document.getElementById('vcard-address').value.trim();
-                    
-                    if (!vcardName || !vcardPhone || !vcardEmail) {
-                        alert('Please enter at least name, phone, and email');
-                        return;
-                    }
-                    
-                    // Format vCard data
-                    qrData = 'BEGIN:VCARD\nVERSION:3.0\n';
-                    qrData += `N:${vcardName}\n`;
-                    qrData += `FN:${vcardName}\n`;
-                    if (vcardCompany) qrData += `ORG:${vcardCompany}\n`;
-                    if (vcardTitle) qrData += `TITLE:${vcardTitle}\n`;
-                    qrData += `TEL:${vcardPhone}\n`;
-                    qrData += `EMAIL:${vcardEmail}\n`;
-                    if (vcardWebsite) qrData += `URL:${vcardWebsite}\n`;
-                    if (vcardAddress) qrData += `ADR:;;${vcardAddress};;;\n`;
-                    qrData += 'END:VCARD';
-                    break;
-            }
-            
-            // Generate QR code
-            try {
-                // Clear previous QR code
-                qrContainer.innerHTML = '';
+            generateBtn.addEventListener('click', () => {
+                const qrType = qrTypeSelect.value;
+                const errorCorrectionLevel = document.getElementById('error-correction').value;
+                let qrData = '';
                 
-                // Create QR code
-                const qr = qrcode(0, errorCorrectionLevel);
-                qr.addData(qrData);
-                qr.make();
-                
-                // Create image element
-                const qrImage = document.createElement('img');
-                qrImage.src = qr.createDataURL(4);
-                qrImage.alt = 'QR Code';
-                qrImage.classList.add('w-full', 'h-full');
-                
-                // Add to container
-                qrContainer.appendChild(qrImage);
-                
-                // Store current QR code
-                currentQrCode = {
-                    dataURL: qrImage.src,
-                    data: qrData
-                };
-                
-                // Show action buttons
-                actionButtons.classList.remove('hidden');
-            } catch (error) {
-                qrContainer.innerHTML = `<p class="text-red-500 text-center">Error generating QR code: ${error.message}</p>`;
-                actionButtons.classList.add('hidden');
-            }
-        });
-
-        // Download QR code as PNG
-        downloadBtn.addEventListener('click', () => {
-            if (!currentQrCode) return;
-            
-            const link = document.createElement('a');
-            link.download = 'qrcode.png';
-            link.href = currentQrCode.dataURL;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        // Share QR code (Web Share API)
-        shareBtn.addEventListener('click', async () => {
-            if (!currentQrCode) return;
-            
-            if (navigator.share) {
-                try {
-                    // Convert data URL to Blob
-                    const response = await fetch(currentQrCode.dataURL);
-                    const blob = await response.blob();
-                    const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                // Prepare QR data based on type
+                switch (qrType) {
+                    case 'url':
+                        qrData = document.getElementById('url-input').value.trim();
+                        if (!qrData) {
+                            alert('Please enter a URL');
+                            return;
+                        }
+                        if (!qrData.startsWith('http://') && !qrData.startsWith('https://')) {
+                            qrData = 'https://' + qrData;
+                        }
+                        break;
                     
-                    await navigator.share({
-                        title: 'QR Code',
-                        text: 'Here is your QR code',
-                        files: [file]
-                    });
-                } catch (error) {
-                    console.error('Error sharing:', error);
-                    alert('Could not share the QR code: ' + error.message);
+                    case 'text':
+                        qrData = document.getElementById('text-input').value.trim();
+                        if (!qrData) {
+                            alert('Please enter some text');
+                            return;
+                        }
+                        break;
+                        
+                    case 'email':
+                        const emailAddress = document.getElementById('email-address').value.trim();
+                        const emailSubject = document.getElementById('email-subject').value.trim();
+                        const emailBody = document.getElementById('email-body').value.trim();
+                        
+                        if (!emailAddress) {
+                            alert('Please enter an email address');
+                            return;
+                        }
+                        
+                        qrData = `mailto:${emailAddress}`;
+                        if (emailSubject || emailBody) {
+                            qrData += '?';
+                            if (emailSubject) qrData += `subject=${encodeURIComponent(emailSubject)}`;
+                            if (emailSubject && emailBody) qrData += '&';
+                            if (emailBody) qrData += `body=${encodeURIComponent(emailBody)}`;
+                        }
+                        break;
+                        
+                    case 'phone':
+                        const phoneNumber = document.getElementById('phone-number').value.trim();
+                        if (!phoneNumber) {
+                            alert('Please enter a phone number');
+                            return;
+                        }
+                        qrData = `tel:${phoneNumber}`;
+                        break;
+                        
+                    case 'sms':
+                        const smsNumber = document.getElementById('sms-number').value.trim();
+                        const smsMessage = document.getElementById('sms-message').value.trim();
+                        
+                        if (!smsNumber) {
+                            alert('Please enter a phone number');
+                            return;
+                        }
+                        
+                        qrData = `smsto:${smsNumber}`;
+                        if (smsMessage) {
+                            qrData += `:${smsMessage}`;
+                        }
+                        break;
+                        
+                    case 'wifi':
+                        const wifiSsid = document.getElementById('wifi-ssid').value.trim();
+                        const wifiPassword = document.getElementById('wifi-password').value;
+                        const wifiEncryption = document.getElementById('wifi-encryption').value;
+                        const wifiHidden = document.getElementById('wifi-hidden').checked;
+                        
+                        if (!wifiSsid) {
+                            alert('Please enter a network name (SSID)');
+                            return;
+                        }
+                        
+                        qrData = `WIFI:S:${wifiSsid};`;
+                        if (wifiEncryption !== 'nopass') {
+                            qrData += `T:${wifiEncryption};P:${wifiPassword};`;
+                        } else {
+                            qrData += 'T:nopass;';
+                        }
+                        if (wifiHidden) {
+                            qrData += 'H:true;';
+                        }
+                        qrData += ';';
+                        break;
+                        
+                    case 'vcard':
+                        const vcardName = document.getElementById('vcard-name').value.trim();
+                        const vcardCompany = document.getElementById('vcard-company').value.trim();
+                        const vcardTitle = document.getElementById('vcard-title').value.trim();
+                        const vcardPhone = document.getElementById('vcard-phone').value.trim();
+                        const vcardEmail = document.getElementById('vcard-email').value.trim();
+                        const vcardWebsite = document.getElementById('vcard-website').value.trim();
+                        const vcardAddress = document.getElementById('vcard-address').value.trim();
+                        
+                        if (!vcardName || !vcardPhone || !vcardEmail) {
+                            alert('Please enter at least name, phone, and email');
+                            return;
+                        }
+                        
+                        // Format vCard data
+                        qrData = 'BEGIN:VCARD\nVERSION:3.0\n';
+                        qrData += `N:${vcardName}\n`;
+                        qrData += `FN:${vcardName}\n`;
+                        if (vcardCompany) qrData += `ORG:${vcardCompany}\n`;
+                        if (vcardTitle) qrData += `TITLE:${vcardTitle}\n`;
+                        qrData += `TEL:${vcardPhone}\n`;
+                        qrData += `EMAIL:${vcardEmail}\n`;
+                        if (vcardWebsite) qrData += `URL:${vcardWebsite}\n`;
+                        if (vcardAddress) qrData += `ADR:;;${vcardAddress};;;\n`;
+                        qrData += 'END:VCARD';
+                        break;
                 }
-            } else {
-                alert('Web Share API is not supported in your browser. You can download the QR code instead.');
-            }
+            
+                // Generate QR code
+                try {
+                    // Clear previous QR code
+                    qrContainer.innerHTML = '';
+                    
+                    // Create QR code
+                    const qr = qrcode(0, errorCorrectionLevel);
+                    qr.addData(qrData);
+                    qr.make();
+                    
+                    // Create image element
+                    const qrImage = document.createElement('img');
+                    qrImage.src = qr.createDataURL(4);
+                    qrImage.alt = 'QR Code';
+                    qrImage.classList.add('w-full', 'h-full');
+                    
+                    // Add to container
+                    qrContainer.appendChild(qrImage);
+                    
+                    // Store current QR code
+                    currentQrCode = {
+                        dataURL: qrImage.src,
+                        data: qrData
+                    };
+                    
+                    // Show action buttons
+                    actionButtons.classList.remove('hidden');
+                } catch (error) {
+                    qrContainer.innerHTML = `<p class="text-red-500 text-center">Error generating QR code: ${error.message}</p>`;
+                    actionButtons.classList.add('hidden');
+                }
+            });
+
+            // Download QR code as PNG
+            downloadBtn.addEventListener('click', () => {
+                if (!currentQrCode) return;
+                
+                const link = document.createElement('a');
+                link.download = 'qrcode.png';
+                link.href = currentQrCode.dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Share QR code (Web Share API)
+            shareBtn.addEventListener('click', async () => {
+                if (!currentQrCode) return;
+                
+                if (navigator.share) {
+                    try {
+                        // Convert data URL to Blob
+                        const response = await fetch(currentQrCode.dataURL);
+                        const blob = await response.blob();
+                        const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                        
+                        await navigator.share({
+                            title: 'QR Code',
+                            text: 'Here is your QR code',
+                            files: [file]
+                        });
+                    } catch (error) {
+                        console.error('Error sharing:', error);
+                        alert('Could not share the QR code: ' + error.message);
+                    }
+                } else {
+                    alert('Web Share API is not supported in your browser. You can download the QR code instead.');
+                }
+            });
         });
     </script>
 </body>
