@@ -109,6 +109,14 @@ Key architectural features:
    - Uses the qrcode.js library for QR code generation
    - All processing happens client-side for complete privacy
 
+9. **JPG to PNG Converter**: Convert JPG/JPEG images to PNG format
+   - Browser-based conversion with no server uploads
+   - Support for multiple file selection and batch processing
+   - Preview converted images before downloading
+   - Download individual images or all as a ZIP archive
+   - Detailed error handling and debugging information
+   - Uses HTML5 Canvas API for image conversion
+
 
 ### Deployment
 
