@@ -299,6 +299,7 @@
             async function convertFiles(files) {
                 convertedFiles = [];
                 let completedCount = 0;
+                let errorFiles = [];
                 
                 // Get selected format
                 const selectedFormat = document.querySelector('input[name="format"]:checked').value;
@@ -314,6 +315,12 @@
                                 // Convert HEIC to selected format using heic2any
                                 const blob = new Blob([event.target.result]);
                                 
+                                // Log file info for debugging
+                                console.log(`Converting file: ${file.name}`);
+                                console.log(`File size: ${file.size} bytes`);
+                                console.log(`File type: ${file.type}`);
+                                console.log(`ArrayBuffer size: ${event.target.result.byteLength} bytes`);
+                                
                                 // Simulate progress updates
                                 let progress = 0;
                                 const interval = setInterval(() => {
@@ -323,43 +330,89 @@
                                     }
                                 }, 100);
                                 
-                                const convertedBlob = await window.heicTo({
-                                    blob: file,
-                                    type: outputMimeType,
-                                    quality: selectedFormat === 'jpeg' ? 0.9 : 1
-                                });
-                                
-                                clearInterval(interval);
-                                updateProgress(index, 100);
-                                
-                                // Create a name for the converted file
-                                const originalName = file.name.replace(/\.heic$/i, '');
-                                const newFileName = `${originalName}${outputExtension}`;
-                                
-                                // Create a URL for the converted image
-                                const imageUrl = URL.createObjectURL(convertedBlob);
-                                
-                                convertedFiles.push({
-                                    name: newFileName,
-                                    url: imageUrl,
-                                    blob: convertedBlob
-                                });
+                                try {
+                                    const convertedBlob = await window.heicTo({
+                                        blob: file,
+                                        type: outputMimeType,
+                                        quality: selectedFormat === 'jpeg' ? 0.9 : 1
+                                    });
+                                    
+                                    clearInterval(interval);
+                                    updateProgress(index, 100);
+                                    
+                                    // Create a name for the converted file
+                                    const originalName = file.name.replace(/\.heic$/i, '');
+                                    const newFileName = `${originalName}${outputExtension}`;
+                                    
+                                    // Create a URL for the converted image
+                                    const imageUrl = URL.createObjectURL(convertedBlob);
+                                    
+                                    convertedFiles.push({
+                                        name: newFileName,
+                                        url: imageUrl,
+                                        blob: convertedBlob,
+                                        status: 'success'
+                                    });
+                                    
+                                    console.log(`Successfully converted: ${file.name}`);
+                                } catch (conversionError) {
+                                    clearInterval(interval);
+                                    updateProgress(index, 0);
+                                    
+                                    console.error(`Conversion error for ${file.name}:`, conversionError);
+                                    
+                                    // Add to error files
+                                    errorFiles.push({
+                                        file: file,
+                                        error: conversionError,
+                                        errorDetails: {
+                                            message: conversionError.message,
+                                            stack: conversionError.stack,
+                                            name: conversionError.name
+                                        }
+                                    });
+                                    
+                                    convertedFiles.push({
+                                        name: file.name,
+                                        originalFile: file,
+                                        status: 'error',
+                                        error: conversionError.message || 'Unknown conversion error'
+                                    });
+                                }
                                 
                                 completedCount++;
                                 
                                 // If all files are converted, show results
                                 if (completedCount === files.length) {
-                                    showResults();
+                                    showResults(errorFiles);
                                 }
                                 
                                 resolve();
                             } catch (error) {
-                                console.error('Error converting file:', error);
+                                console.error(`Error reading file ${file.name}:`, error);
                                 updateProgress(index, 0);
+                                
+                                errorFiles.push({
+                                    file: file,
+                                    error: error,
+                                    errorDetails: {
+                                        message: error.message,
+                                        stack: error.stack,
+                                        name: error.name,
+                                        phase: 'file reading'
+                                    }
+                                });
+                                
+                                convertedFiles.push({
+                                    name: file.name,
+                                    originalFile: file,
+                                    status: 'error',
+                                    error: error.message || 'Error reading file'
+                                });
                                 
                                 completedCount++;
                                 if (completedCount === files.length) {
-                                    showResults();
+                                    showResults(errorFiles);
                                 }
                                 
                                 resolve();
@@ -373,32 +426,109 @@
                 await Promise.all(conversionPromises);
             }
             
-            function showResults() {
+            function showResults(errorFiles = []) {
                 processingSection.classList.add('hidden');
                 resultsSection.classList.remove('hidden');
                 
                 // Clear gallery
                 gallery.innerHTML = '';
                 
+                // Add debug info if there were errors
+                if (errorFiles.length > 0) {
+                    const debugSection = document.createElement('div');
+                    debugSection.className = 'mb-8 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm';
+                    
+                    debugSection.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Conversion Issues Detected</h3>
+                            <button id="toggle-debug" class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                                Show Technical Details
+                            </button>
+                        </div>
+                        <div class="text-gray-700 dark:text-gray-300">
+                            <p class="mb-2">Some images couldn't be converted. This might be due to:</p>
+                            <ul class="list-disc pl-5 mb-4 space-y-1">
+                                <li>Images from newer iPhone models (iPhone 12 or newer)</li>
+                                <li>Images with special encoding or compression</li>
+                                <li>Corrupted HEIC files</li>
+                                <li>Browser compatibility issues</li>
+                            </ul>
+                            <p>Try using a different browser or converting the images on your device first.</p>
+                        </div>
+                        <div id="debug-details" class="hidden mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-auto max-h-96">
+                            <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-2">Technical Details</h4>
+                            <div class="text-xs font-mono">
+                                <p class="mb-2">Browser: ${navigator.userAgent}</p>
+                                <p class="mb-2">Error Count: ${errorFiles.length}</p>
+                                ${errorFiles.map((item, i) => `
+                                    <div class="mb-4 p-2 border border-gray-200 dark:border-gray-600 rounded">
+                                        <p class="font-bold">File ${i+1}: ${item.file.name}</p>
+                                        <p>Size: ${item.file.size} bytes</p>
+                                        <p>Type: ${item.file.type || 'unknown'}</p>
+                                        <p>Error: ${item.error.toString()}</p>
+                                        <p>Details: ${JSON.stringify(item.errorDetails)}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    gallery.parentNode.insertBefore(debugSection, gallery);
+                    
+                    // Add toggle functionality for debug details
+                    document.getElementById('toggle-debug').addEventListener('click', function() {
+                        const debugDetails = document.getElementById('debug-details');
+                        const isHidden = debugDetails.classList.contains('hidden');
+                        
+                        if (isHidden) {
+                            debugDetails.classList.remove('hidden');
+                            this.textContent = 'Hide Technical Details';
+                        } else {
+                            debugDetails.classList.add('hidden');
+                            this.textContent = 'Show Technical Details';
+                        }
+                    });
+                }
+                
                 // Add image previews to gallery
                 convertedFiles.forEach((file, index) => {
                     const imageCard = document.createElement('div');
                     imageCard.className = 'bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow';
                     
-                    imageCard.innerHTML = `
-                        <div class="aspect-w-4 aspect-h-3 relative">
-                            <img src="${file.url}" alt="${file.name}" class="w-full h-48 object-cover" />
-                        </div>
-                        <div class="p-3">
-                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${file.name}</p>
-                            <div class="flex justify-between items-center mt-2">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">${(file.blob.size / 1024).toFixed(1)} KB</span>
-                                <button class="download-btn text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm font-medium" data-index="${index}">
-                                    Download
-                                </button>
+                    if (file.status === 'success') {
+                        imageCard.innerHTML = `
+                            <div class="aspect-w-4 aspect-h-3 relative">
+                                <img src="${file.url}" alt="${file.name}" class="w-full h-48 object-cover" />
                             </div>
-                        </div>
-                    `;
+                            <div class="p-3">
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${file.name}</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">${(file.blob.size / 1024).toFixed(1)} KB</span>
+                                    <button class="download-btn text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm font-medium" data-index="${index}">
+                                        Download
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        imageCard.innerHTML = `
+                            <div class="aspect-w-4 aspect-h-3 relative bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="p-3">
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${file.name}</p>
+                                <p class="text-xs text-red-500 mt-1">Conversion failed</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Error</span>
+                                    <button class="error-details-btn text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 text-sm font-medium" data-index="${index}">
+                                        Details
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
                     
                     gallery.appendChild(imageCard);
                 });
@@ -410,25 +540,114 @@
                         downloadImage(index);
                     });
                 });
+                
+                // Add event listeners to error details buttons
+                document.querySelectorAll('.error-details-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        showErrorDetails(index);
+                    });
+                });
             }
             
             function downloadImage(index) {
                 const file = convertedFiles[index];
-                saveAs(file.blob, file.name);
+                if (file && file.status === 'success') {
+                    saveAs(file.blob, file.name);
+                }
+            }
+            
+            function showErrorDetails(index) {
+                const file = convertedFiles[index];
+                if (!file || file.status !== 'error') return;
+                
+                // Create modal for error details
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.id = 'error-modal';
+                
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-auto">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Error Details: ${file.name}</h3>
+                            <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            <p class="mb-4">This file couldn't be converted due to the following error:</p>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded font-mono text-xs mb-4 overflow-auto">
+                                ${file.error}
+                            </div>
+                            
+                            <h4 class="font-medium mb-2">Possible Solutions:</h4>
+                            <ul class="list-disc pl-5 space-y-1 mb-4">
+                                <li>Try using a different browser (Chrome or Edge recommended)</li>
+                                <li>Convert the image on your device first using native apps</li>
+                                <li>Check if the HEIC file is corrupted</li>
+                                <li>For iPhone users: Try using the Files app to convert to JPEG before uploading</li>
+                            </ul>
+                            
+                            <h4 class="font-medium mb-2">Technical Information:</h4>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded font-mono text-xs overflow-auto">
+                                <p>File name: ${file.name}</p>
+                                <p>File size: ${file.originalFile ? (file.originalFile.size / 1024).toFixed(1) + ' KB' : 'Unknown'}</p>
+                                <p>File type: ${file.originalFile ? (file.originalFile.type || 'Not specified') : 'Unknown'}</p>
+                                <p>Browser: ${navigator.userAgent}</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button id="close-btn" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Add event listeners to close modal
+                document.getElementById('close-modal').addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                });
+                
+                document.getElementById('close-btn').addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                });
+                
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                    }
+                });
             }
             
             function downloadAllImages() {
                 if (convertedFiles.length === 0) return;
                 
-                if (convertedFiles.length === 1) {
+                // Filter only successful conversions
+                const successfulFiles = convertedFiles.filter(file => file.status === 'success');
+                
+                if (successfulFiles.length === 0) {
+                    alert('No successfully converted files to download.');
+                    return;
+                }
+                
+                if (successfulFiles.length === 1) {
                     // If only one file, download it directly
-                    downloadImage(0);
+                    const index = convertedFiles.findIndex(file => file.status === 'success');
+                    if (index !== -1) {
+                        downloadImage(index);
+                    }
                 } else {
                     // If multiple files, create a zip
                     const zip = new JSZip();
                     
                     // Add each file to the zip
-                    convertedFiles.forEach(file => {
+                    successfulFiles.forEach(file => {
                         zip.file(file.name, file.blob);
                     });
                     
