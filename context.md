@@ -85,6 +85,23 @@ Key architectural features:
 6. **WhatsApp Link Generator**: Create WhatsApp chat links without saving contacts
    - Utility tool for quick communication
 
+
+7. **QR Code Scanner**: Scan QR codes using your device's camera
+   - Real-time scanning using the device's camera
+   - Display of scan results without redirecting to external links
+   - Detection of URLs in QR codes
+   - Start/stop controls for the scanner
+   - Uses the html5-qrcode library for QR code scanning functionality
+
+8. **QR Code Creator**: Generate QR codes for various types of content
+   - Support for multiple QR code types: URLs, text, email, phone, SMS, WiFi, vCard
+   - Customizable error correction levels
+   - Download generated QR codes as PNG files
+   - Share QR codes using the Web Share API (on supported browsers)
+   - Uses the qrcode.js library for QR code generation
+   - All processing happens client-side for complete privacy
+
+
 ### Deployment
 
 The project is automatically deployed to Cloudflare Workers when changes are pushed to the main branch using GitHub Actions. The deployment workflow is defined in `.github/workflows/deploy.yml`.
@@ -101,7 +118,7 @@ Custom domains:
 2. Use `template.html` as a starting point for consistent styling
 3. Implement client-side functionality using JavaScript
 4. Add the tool to the grid in `index.html`
-5. Update README.md to include the new tool
+5. Update context.md to include info about the new tool!
 
 #### Best Practices
 
@@ -132,19 +149,3 @@ Custom domains:
   - hono: Lightweight web framework
   - typescript: Language support
   - wrangler: Cloudflare Workers CLI tool
-### Available Tools (continued)
-
-7. **QR Code Scanner**: Scan QR codes using your device's camera
-   - Real-time scanning using the device's camera
-   - Display of scan results without redirecting to external links
-   - Detection of URLs in QR codes
-   - Start/stop controls for the scanner
-   - Uses the html5-qrcode library for QR code scanning functionality
-
-8. **QR Code Creator**: Generate QR codes for various types of content
-   - Support for multiple QR code types: URLs, text, email, phone, SMS, WiFi, vCard
-   - Customizable error correction levels
-   - Download generated QR codes as PNG files
-   - Share QR codes using the Web Share API (on supported browsers)
-   - Uses the qrcode.js library for QR code generation
-   - All processing happens client-side for complete privacy
