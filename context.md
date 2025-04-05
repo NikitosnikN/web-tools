@@ -101,6 +101,14 @@ Key architectural features:
    - Uses the qrcode.js library for QR code generation
    - All processing happens client-side for complete privacy
 
+8. **QR Code Creator**: Generate QR codes for various types of content
+   - Support for multiple QR code types: URLs, text, email, phone, SMS, WiFi, vCard
+   - Customizable error correction levels
+   - Download generated QR codes as PNG files
+   - Share QR codes using the Web Share API (on supported browsers)
+   - Uses the qrcode.js library for QR code generation
+   - All processing happens client-side for complete privacy
+
 
 ### Deployment
 
