@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Creator - Web Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code generation library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        .dark-mode {
+            @apply bg-gray-900 text-white;
+        }
+        .light-mode {
+            @apply bg-white text-gray-900;
+        }
+    </style>
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">QR Code Creator</h1>
+                <div class="flex space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                    <a href="/" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Create QR codes for various types of content. All processing happens in your browser - no data is sent to any server.
+            </p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">QR Code Settings</h2>
+                
+                <div class="mb-4">
+                    <label for="qr-type" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">QR Code Type</label>
+                    <select id="qr-type" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="url">URL</option>
+                        <option value="text">Text</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="sms">SMS</option>
+                        <option value="wifi">WiFi</option>
+                        <option value="vcard">vCard (Contact)</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic form fields based on QR type -->
+                <div id="form-fields" class="space-y-4">
+                    <!-- URL fields (default) -->
+                    <div id="url-fields">
+                        <div class="mb-4">
+                            <label for="url-input" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">URL</label>
+                            <input type="url" id="url-input" placeholder="https://example.com" 
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- Text fields (hidden by default) -->
+                    <div id="text-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="text-input" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Text</label>
+                            <textarea id="text-input" rows="3" placeholder="Enter your text here"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Email fields (hidden by default) -->
+                    <div id="email-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="email-address" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email Address</label>
+                            <input type="email" id="email-address" placeholder="example@example.com"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="email-subject" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Subject (optional)</label>
+                            <input type="text" id="email-subject" placeholder="Email subject"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="email-body" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Body (optional)</label>
+                            <textarea id="email-body" rows="3" placeholder="Email body"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Phone fields (hidden by default) -->
+                    <div id="phone-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="phone-number" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Phone Number</label>
+                            <input type="tel" id="phone-number" placeholder="+1234567890"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- SMS fields (hidden by default) -->
+                    <div id="sms-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="sms-number" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Phone Number</label>
+                            <input type="tel" id="sms-number" placeholder="+1234567890"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="sms-message" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Message (optional)</label>
+                            <textarea id="sms-message" rows="3" placeholder="SMS message"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- WiFi fields (hidden by default) -->
+                    <div id="wifi-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="wifi-ssid" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Network Name (SSID)</label>
+                            <input type="text" id="wifi-ssid" placeholder="WiFi Network Name"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="wifi-password" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Password</label>
+                            <input type="password" id="wifi-password" placeholder="WiFi Password"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="wifi-encryption" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Encryption</label>
+                            <select id="wifi-encryption" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">None</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="wifi-hidden" class="mr-2">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Hidden Network</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- vCard fields (hidden by default) -->
+                    <div id="vcard-fields" class="hidden">
+                        <div class="mb-4">
+                            <label for="vcard-name" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Full Name</label>
+                            <input type="text" id="vcard-name" placeholder="John Doe"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-company" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Company (optional)</label>
+                            <input type="text" id="vcard-company" placeholder="Company Name"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-title" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Job Title (optional)</label>
+                            <input type="text" id="vcard-title" placeholder="Job Title"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-phone" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Phone Number</label>
+                            <input type="tel" id="vcard-phone" placeholder="+1234567890"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-email" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email</label>
+                            <input type="email" id="vcard-email" placeholder="example@example.com"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-website" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Website (optional)</label>
+                            <input type="url" id="vcard-website" placeholder="https://example.com"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="mb-4">
+                            <label for="vcard-address" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Address (optional)</label>
+                            <textarea id="vcard-address" rows="2" placeholder="123 Main St, City, Country"
+                                class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="error-correction" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Error Correction Level</label>
+                    <select id="error-correction" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="L">Low (7%)</option>
+                        <option value="M" selected>Medium (15%)</option>
+                        <option value="Q">Quartile (25%)</option>
+                        <option value="H">High (30%)</option>
+                    </select>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Higher error correction allows QR code to be readable even if partially damaged or obscured.
+                    </p>
+                </div>
+
+                <button id="generate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                    Generate QR Code
+                </button>
+            </div>
+
+            <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Your QR Code</h2>
+                
+                <div id="qr-container" class="flex justify-center items-center bg-white p-4 rounded-lg mb-4 w-64 h-64">
+                    <p class="text-gray-500 text-center">Your QR code will appear here</p>
+                </div>
+
+                <div id="action-buttons" class="w-full space-y-3 mt-4 hidden">
+                    <button id="download-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                        <i class="fas fa-download mr-2"></i> Download as PNG
+                    </button>
+                    <button id="share-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded transition-colors">
+                        <i class="fas fa-share-alt mr-2"></i> Share QR Code
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="mt-12 text-center text-gray-600 dark:text-gray-400">
+            <p>All processing happens in your browser - no data is sent to any server.</p>
+            <p class="mt-2">
+                <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline">Back to Home</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+
+        // QR Code type selection
+        const qrTypeSelect = document.getElementById('qr-type');
+        const formFields = {
+            url: document.getElementById('url-fields'),
+            text: document.getElementById('text-fields'),
+            email: document.getElementById('email-fields'),
+            phone: document.getElementById('phone-fields'),
+            sms: document.getElementById('sms-fields'),
+            wifi: document.getElementById('wifi-fields'),
+            vcard: document.getElementById('vcard-fields')
+        };
+
+        qrTypeSelect.addEventListener('change', () => {
+            // Hide all form fields
+            Object.values(formFields).forEach(field => {
+                field.classList.add('hidden');
+            });
+            
+            // Show selected form fields
+            const selectedType = qrTypeSelect.value;
+            formFields[selectedType].classList.remove('hidden');
+        });
+
+        // Generate QR Code
+        const generateBtn = document.getElementById('generate-btn');
+        const qrContainer = document.getElementById('qr-container');
+        const actionButtons = document.getElementById('action-buttons');
+        const downloadBtn = document.getElementById('download-btn');
+        const shareBtn = document.getElementById('share-btn');
+        
+        let currentQrCode = null;
+
+        generateBtn.addEventListener('click', () => {
+            const qrType = qrTypeSelect.value;
+            const errorCorrectionLevel = document.getElementById('error-correction').value;
+            let qrData = '';
+            
+            // Prepare QR data based on type
+            switch (qrType) {
+                case 'url':
+                    qrData = document.getElementById('url-input').value.trim();
+                    if (!qrData) {
+                        alert('Please enter a URL');
+                        return;
+                    }
+                    if (!qrData.startsWith('http://') && !qrData.startsWith('https://')) {
+                        qrData = 'https://' + qrData;
+                    }
+                    break;
+                    
+                case 'text':
+                    qrData = document.getElementById('text-input').value.trim();
+                    if (!qrData) {
+                        alert('Please enter some text');
+                        return;
+                    }
+                    break;
+                    
+                case 'email':
+                    const emailAddress = document.getElementById('email-address').value.trim();
+                    const emailSubject = document.getElementById('email-subject').value.trim();
+                    const emailBody = document.getElementById('email-body').value.trim();
+                    
+                    if (!emailAddress) {
+                        alert('Please enter an email address');
+                        return;
+                    }
+                    
+                    qrData = `mailto:${emailAddress}`;
+                    if (emailSubject || emailBody) {
+                        qrData += '?';
+                        if (emailSubject) qrData += `subject=${encodeURIComponent(emailSubject)}`;
+                        if (emailSubject && emailBody) qrData += '&';
+                        if (emailBody) qrData += `body=${encodeURIComponent(emailBody)}`;
+                    }
+                    break;
+                    
+                case 'phone':
+                    const phoneNumber = document.getElementById('phone-number').value.trim();
+                    if (!phoneNumber) {
+                        alert('Please enter a phone number');
+                        return;
+                    }
+                    qrData = `tel:${phoneNumber}`;
+                    break;
+                    
+                case 'sms':
+                    const smsNumber = document.getElementById('sms-number').value.trim();
+                    const smsMessage = document.getElementById('sms-message').value.trim();
+                    
+                    if (!smsNumber) {
+                        alert('Please enter a phone number');
+                        return;
+                    }
+                    
+                    qrData = `smsto:${smsNumber}`;
+                    if (smsMessage) {
+                        qrData += `:${smsMessage}`;
+                    }
+                    break;
+                    
+                case 'wifi':
+                    const wifiSsid = document.getElementById('wifi-ssid').value.trim();
+                    const wifiPassword = document.getElementById('wifi-password').value;
+                    const wifiEncryption = document.getElementById('wifi-encryption').value;
+                    const wifiHidden = document.getElementById('wifi-hidden').checked;
+                    
+                    if (!wifiSsid) {
+                        alert('Please enter a network name (SSID)');
+                        return;
+                    }
+                    
+                    qrData = `WIFI:S:${wifiSsid};`;
+                    if (wifiEncryption !== 'nopass') {
+                        qrData += `T:${wifiEncryption};P:${wifiPassword};`;
+                    } else {
+                        qrData += 'T:nopass;';
+                    }
+                    if (wifiHidden) {
+                        qrData += 'H:true;';
+                    }
+                    qrData += ';';
+                    break;
+                    
+                case 'vcard':
+                    const vcardName = document.getElementById('vcard-name').value.trim();
+                    const vcardCompany = document.getElementById('vcard-company').value.trim();
+                    const vcardTitle = document.getElementById('vcard-title').value.trim();
+                    const vcardPhone = document.getElementById('vcard-phone').value.trim();
+                    const vcardEmail = document.getElementById('vcard-email').value.trim();
+                    const vcardWebsite = document.getElementById('vcard-website').value.trim();
+                    const vcardAddress = document.getElementById('vcard-address').value.trim();
+                    
+                    if (!vcardName || !vcardPhone || !vcardEmail) {
+                        alert('Please enter at least name, phone, and email');
+                        return;
+                    }
+                    
+                    // Format vCard data
+                    qrData = 'BEGIN:VCARD\nVERSION:3.0\n';
+                    qrData += `N:${vcardName}\n`;
+                    qrData += `FN:${vcardName}\n`;
+                    if (vcardCompany) qrData += `ORG:${vcardCompany}\n`;
+                    if (vcardTitle) qrData += `TITLE:${vcardTitle}\n`;
+                    qrData += `TEL:${vcardPhone}\n`;
+                    qrData += `EMAIL:${vcardEmail}\n`;
+                    if (vcardWebsite) qrData += `URL:${vcardWebsite}\n`;
+                    if (vcardAddress) qrData += `ADR:;;${vcardAddress};;;\n`;
+                    qrData += 'END:VCARD';
+                    break;
+            }
+            
+            // Generate QR code
+            try {
+                // Clear previous QR code
+                qrContainer.innerHTML = '';
+                
+                // Create QR code
+                const qr = qrcode(0, errorCorrectionLevel);
+                qr.addData(qrData);
+                qr.make();
+                
+                // Create image element
+                const qrImage = document.createElement('img');
+                qrImage.src = qr.createDataURL(4);
+                qrImage.alt = 'QR Code';
+                qrImage.classList.add('w-full', 'h-full');
+                
+                // Add to container
+                qrContainer.appendChild(qrImage);
+                
+                // Store current QR code
+                currentQrCode = {
+                    dataURL: qrImage.src,
+                    data: qrData
+                };
+                
+                // Show action buttons
+                actionButtons.classList.remove('hidden');
+            } catch (error) {
+                qrContainer.innerHTML = `<p class="text-red-500 text-center">Error generating QR code: ${error.message}</p>`;
+                actionButtons.classList.add('hidden');
+            }
+        });
+
+        // Download QR code as PNG
+        downloadBtn.addEventListener('click', () => {
+            if (!currentQrCode) return;
+            
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = currentQrCode.dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Share QR code (Web Share API)
+        shareBtn.addEventListener('click', async () => {
+            if (!currentQrCode) return;
+            
+            if (navigator.share) {
+                try {
+                    // Convert data URL to Blob
+                    const response = await fetch(currentQrCode.dataURL);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                    
+                    await navigator.share({
+                        title: 'QR Code',
+                        text: 'Here is your QR code',
+                        files: [file]
+                    });
+                } catch (error) {
+                    console.error('Error sharing:', error);
+                    alert('Could not share the QR code: ' + error.message);
+                }
+            } else {
+                alert('Web Share API is not supported in your browser. You can download the QR code instead.');
+            }
+        });
+    </script>
+</body>
+</html>
