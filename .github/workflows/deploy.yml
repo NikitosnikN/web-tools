@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Build Next.js app
+        run: npm run build
+        
       - name: Setup Cloudflare API token
         run: echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" > .env
         
