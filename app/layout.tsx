@@ -1,10 +1,21 @@
 import React from 'react';
 import { Metadata, Viewport } from 'next';
 import ThemeProvider from './components/ThemeProvider';
+import OfflineProvider from './components/OfflineProvider';
 
 export const metadata: Metadata = {
   title: 'Web Tools Collection',
   description: 'A collection of free, browser-based utilities to help with everyday tasks.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Web Tools Collection',
+  },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {
@@ -18,8 +29,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <script
@@ -52,7 +79,9 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 min-h-screen">
         <ThemeProvider>
-          {children}
+          <OfflineProvider>
+            {children}
+          </OfflineProvider>
         </ThemeProvider>
       </body>
     </html>

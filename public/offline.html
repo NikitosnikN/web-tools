@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Web Tools</title>
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="text-center p-8">
+        <div class="mb-8">
+            <i class="fas fa-wifi-slash text-6xl text-gray-400 dark:text-gray-500 mb-4"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">You're Offline</h1>
+        <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-md">
+            It looks like you're not connected to the internet. Don't worry - most tools still work offline!
+        </p>
+        <div class="space-y-4">
+            <button onclick="window.history.back()" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Go Back
+            </button>
+            <a href="/" class="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                <i class="fas fa-home mr-2"></i>
+                Back to Home
+            </a>
+        </div>
+        <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p class="text-blue-700 dark:text-blue-300 text-sm">
+                <i class="fas fa-info-circle mr-1"></i>
+                Most tools work offline since they run entirely in your browser
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Footer from './components/Footer';
+import InstallPrompt from './components/InstallPrompt';
+import { useOffline } from './components/OfflineProvider';
 
 interface Tool {
   href: string;
@@ -86,21 +88,34 @@ function toggleDarkMode() {
 }
 
 export default function Home() {
+  const { isOnline, canInstall, installApp, isInstalled, isHydrated } = useOffline();
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
-      {/* Header with theme toggle */}
+      {/* Header with theme toggle and install button */}
       <header className="flex justify-between items-center mb-12">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Web Tools</h1>
-        <button 
-          id="theme-toggle" 
-          onClick={toggleDarkMode} 
-          className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 w-10 h-10 flex items-center justify-center"
-        >
-          {/* Sun icon for dark mode */}
-          <i className="fas fa-sun text-gray-800 dark:hidden text-lg"></i>
-          {/* Moon icon for light mode */}
-          <i className="fas fa-moon text-white hidden dark:block text-lg"></i>
-        </button>
+        <div className="flex items-center gap-2">
+          {isHydrated && canInstall && !isInstalled && (
+            <button 
+              onClick={installApp}
+              className="p-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 px-3 py-2 text-sm flex items-center gap-2"
+            >
+              <i className="fas fa-download"></i>
+              <span>Install App</span>
+            </button>
+          )}
+          <button 
+            id="theme-toggle" 
+            onClick={toggleDarkMode} 
+            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 w-10 h-10 flex items-center justify-center"
+          >
+            {/* Sun icon for dark mode */}
+            <i className="fas fa-sun text-gray-800 dark:hidden text-lg"></i>
+            {/* Moon icon for light mode */}
+            <i className="fas fa-moon text-white hidden dark:block text-lg"></i>
+          </button>
+        </div>
       </header>
 
       {/* Welcome section */}
@@ -109,6 +124,12 @@ export default function Home() {
         <p className="text-gray-600 dark:text-gray-300 text-lg max-w-3xl mx-auto">
           A collection of free, browser-based utilities to help with everyday tasks.
           All tools work entirely in your browser - no data is sent to any server.
+          {isHydrated && !isOnline && (
+            <span className="block mt-2 text-amber-600 dark:text-amber-400 font-medium">
+              <i className="fas fa-info-circle mr-1"></i>
+              You're currently offline, but most tools will still work!
+            </span>
+          )}
           This project is{' '}
           <a 
             href="https://github.com/NikitosnikN/web-tools" 
@@ -164,6 +185,8 @@ export default function Home() {
           </a>
         </p>
       </div>
+
+      <InstallPrompt />
     </div>
   );
 }
