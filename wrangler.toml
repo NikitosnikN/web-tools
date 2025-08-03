@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2023-09-22"
 
 [assets]
-directory = "./src/pages"
+directory = "./dist"
 binding = "ASSETS"
 
 [[routes]]
